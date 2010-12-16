@@ -14,6 +14,11 @@ var enddrag    = {x:0, y:0};
 var usedIDs    = {};
 var lastID     = 0;
 
+var canvasHeight = 0;
+var canvasWidth = 0;
+
+
+
 function getUniqueID(){
     return lastID++;
 }
@@ -109,9 +114,11 @@ function click(){
 
     if (returnFlag) return;
 
+	//Recognize a click on the toolbox
+	//TODO: once i put this into it's own canvas, probably should remove scrollX/Y
     var pos = 0;
     for (var i in Sprites.getOrderedList()){
-        if (utils.pointIntersectRect(globals.mouseX, globals.mouseY, utils.makeRect(toolboxPos[i][0], toolboxPos[i][1], globals.tileWidth))){
+        if (utils.pointIntersectRect(globals.mouseX + scrollX, globals.mouseY + scrollY, utils.makeRect(toolboxPos[i][0], toolboxPos[i][1], globals.tileWidth))){
             selTile = JSON.parse(JSON.stringify(Sprites.getNth(i)));
             if (selTile[2] == "ED" && selTile[0] == 2 && selTile[1] == 0){
                 //special case: map transition tile
@@ -126,6 +133,11 @@ function gameLoop(){
 	scrollX = $("#scroll").scrollLeft();
 	scrollY = $("#scroll").scrollTop();
 	
+	//Check to see if size has been updated
+	if (globals.tilesWide != parseInt($("#size").val())){
+		globals.tilesWide = parseInt($("#size").val()); //Assumes that tiles are square; then again, we' probably do that the whole time...
+		updateSize();
+	}
 	
     if (globals.ticks++ % 4) {
         drawScreen();
@@ -150,7 +162,7 @@ function gameLoop(){
 
 function drawScreen(){
 	//clear previous render
-    globals.context.clearRect(0,0,globals.maxSize,globals.maxSize);
+    globals.context.clearRect(0,0,canvasWidth,canvasHeight);
 
 	//render map
     for (var i=0;i<globals.tilesWide;i++){
@@ -212,7 +224,20 @@ function drawScreen(){
 								   			roundToTile(enddrag.y + scrollY,1))); 
 }
 
+function updateSize(){
+	canvasHeight = globals.tilesWide * globals.tileWidth + 300; //300 -- approx size of toolbox?
+	canvasWidth = globals.tilesWide * globals.tileWidth + 50 ; 
+
+	document.getElementById("main").height = canvasHeight;
+	document.getElementById("main").width = canvasWidth;
+
+}
+
 function initialize(){
+	globals.tilesWide = 50; //Assumes that tiles are square; then again, we' probably do that the whole time...
+	updateSize();
+	
+	//$("#main").height(canvasSize);
     //bind event to the select box
     $("#maplist").change(function(e){
         switchToMap($("#maplist option:selected").text());
