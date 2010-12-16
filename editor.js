@@ -64,15 +64,7 @@ function drag(){
     }
 
     enddrag = {x: globals.mouseX, y:globals.mouseY};
-	
-    globals.context.strokeRect(Math.min(roundToTile(startdrag.x), 
-										roundToTile(enddrag.x,1)), 
-							   Math.min(roundToTile(startdrag.y), 
-							   			roundToTile(enddrag.y,1)), 
-							   Math.abs(roundToTile(startdrag.x) - 
-							   			roundToTile(enddrag.x,1)), 
-							   Math.abs(roundToTile(startdrag.y) - 
-							   			roundToTile(enddrag.y,1))); 
+
 }
 
 function click(){
@@ -103,15 +95,13 @@ function click(){
 	//Fill in all the tiles that were dragged to
 	
     curObj.oldmap = JSON.parse(JSON.stringify(curObj.map));
-    for (var x = Math.min(enddrag.x, startdrag.x); x <= roundToTile(Math.max(enddrag.x, startdrag.x), 1); x += globals.tileWidth){
-        for (var y = Math.min(enddrag.y, startdrag.y); y <= roundToTile(Math.max(enddrag.y, startdrag.y), 1); y += globals.tileWidth){
+    for (var x = Math.min(enddrag.x + scrollX, startdrag.x+ scrollX); x <= roundToTile(Math.max(enddrag.x+ scrollX, startdrag.x+ scrollX), 1); x += globals.tileWidth){
+        for (var y = Math.min(enddrag.y + scrollY, startdrag.y + scrollY); y <= roundToTile(Math.max(enddrag.y + scrollY, startdrag.y + scrollY), 1); y += globals.tileWidth){
             if (x < globals.tileWidth * globals.tilesWide &&
                 y < globals.tileWidth * globals.tilesWide ){
                 
-				var newx = x + scrollX;
-				var newy = y + scrollY;
 
-                editedmap[Math.floor(newx / globals.tileWidth)][Math.floor(newy / globals.tileWidth)] = JSON.parse(JSON.stringify(selTile));
+                editedmap[Math.floor(x / globals.tileWidth)][Math.floor(y / globals.tileWidth)] = JSON.parse(JSON.stringify(selTile));
                 returnFlag = true;
             }
         }
@@ -159,8 +149,10 @@ function gameLoop(){
 
 
 function drawScreen(){
+	//clear previous render
     globals.context.clearRect(0,0,globals.maxSize,globals.maxSize);
 
+	//render map
     for (var i=0;i<globals.tilesWide;i++){
         for (var j=0;j<globals.tilesWide;j++){
             Sprites.renderImage(globals.context, i*globals.tileWidth, j*globals.tileWidth, curObj.map[i][j][0], curObj.map[i][j][1], curObj.map[i][j][2]); 
@@ -168,7 +160,7 @@ function drawScreen(){
     }
 
 
-    //render special editor specific things on top
+    //render special attributes on top
     for (var i=0;i<globals.tilesWide;i++){
         for (var j=0;j<globals.tilesWide;j++){
             if (curObj.special[i][j][0] == 1 && curObj.special[i][j][1] == 0) continue;
@@ -178,11 +170,10 @@ function drawScreen(){
 
 
     //Render highlighted square
+    if (globals.mouseX + scrollX < globals.tileWidth * globals.tilesWide &&
+        globals.mouseY + scrollY < globals.tileWidth * globals.tilesWide ){
 
-    if (globals.mouseX < globals.tileWidth * globals.tilesWide &&
-        globals.mouseY < globals.tileWidth * globals.tilesWide ){
-
-        utils.renderTile(Math.floor(globals.mouseX / globals.tileWidth)*globals.tileWidth, Math.floor(globals.mouseY / globals.tileWidth)*globals.tileWidth, "H");
+        utils.renderTile(Math.floor( (scrollX + globals.mouseX) / globals.tileWidth)*globals.tileWidth, Math.floor((scrollY + globals.mouseY) / globals.tileWidth)*globals.tileWidth, "H");
     }
 
     //Render 'toolbox'
@@ -207,6 +198,18 @@ function drawScreen(){
                                   Sprites.getNth(i)[2]);
         ++pos;
     }
+	
+	//Render selection square
+	
+	if (dragging)
+	    globals.context.strokeRect(Math.min(roundToTile(startdrag.x + scrollX), 
+											roundToTile(enddrag.x + scrollX,1)), 
+								   Math.min(roundToTile(startdrag.y + scrollY), 
+								   			roundToTile(enddrag.y + scrollY,1)), 
+								   Math.abs(roundToTile(startdrag.x + scrollX) - 
+								   			roundToTile(enddrag.x + scrollX,1)), 
+								   Math.abs(roundToTile(startdrag.y + scrollY) - 
+								   			roundToTile(enddrag.y + scrollY,1))); 
 }
 
 function initialize(){
