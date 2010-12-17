@@ -64,7 +64,6 @@ function roundToTile(x, add){
 function drag(){
     if (!dragging){
         //just started dragging
-
         startdrag  = {x: globals.mouseX, y:globals.mouseY};
     }
 
@@ -118,12 +117,13 @@ function click(){
 	//TODO: once i put this into it's own canvas, probably should remove scrollX/Y
     var pos = 0;
     for (var i in Sprites.getOrderedList()){
-        if (utils.pointIntersectRect(globals.mouseX + scrollX, globals.mouseY + scrollY, utils.makeRect(toolboxPos[i][0], toolboxPos[i][1], globals.tileWidth))){
+		//console.log( $("#toolbox").offset());
+		//debugger; 
+        if (utils.pointIntersectRect( globals.mouseX - $("#toolbox").offset().left + 9,
+									  globals.mouseY - $("#toolbox").offset().top + 9 , 
+									  utils.makeRect(toolboxPos[i][0], toolboxPos[i][1], globals.tileWidth))){
+			console.log("Hit.");
             selTile = JSON.parse(JSON.stringify(Sprites.getNth(i)));
-            if (selTile[2] == "ED" && selTile[0] == 2 && selTile[1] == 0){
-                //special case: map transition tile
-                selTile.push(prompt("Which room to link to?")); 
-            }
         }
         ++pos;
     }
@@ -194,15 +194,15 @@ function drawScreen(){
     var pos = 0;
     for (var i in Sprites.getOrderedList()){
         if (selTile == i){
-            globals.context.fillStyle = "ffff11";
+            globals.toolctx.fillStyle = "ffff11";
 
-            globals.context.fillRect((pos % toolWidth)*(globals.tileWidth+4)-2,
+            globals.toolctx.fillRect((pos % toolWidth)*(globals.tileWidth+4)-2,
                                      globals.tileWidth* (globals.tilesWide)-2 + (Math.floor(i/toolWidth)) * 20, 
                                      globals.tileWidth+4, 
                                      globals.tileWidth+4);
         }
 
-        Sprites.renderImage(globals.context, 
+        Sprites.renderImage(globals.toolctx, 
                                   toolboxPos[pos][0], 
                                   toolboxPos[pos][1], 
                                   Sprites.getNth(i)[0], 
@@ -248,6 +248,8 @@ function initialize(){
     });
     createNewMap();
     globals.context = document.getElementById('main').getContext('2d');
+    globals.toolctx = document.getElementById('toolbox').getContext('2d');
+
     $("#btn").click(function(){
         /*
         var out = "data : [\n";
@@ -320,7 +322,7 @@ function initialize(){
     for (var i in Sprites.getOrderedList()){
         toolboxPos.push([
                            (i % toolWidth  )*(globals.tileWidth+4), 
-                           (globals.tileWidth)*(globals.tilesWide) + (Math.floor(i/toolWidth)) * 20, 
+                           (Math.floor(i/toolWidth)) * 20, 
                        ]);
     }
 

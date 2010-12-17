@@ -8,6 +8,7 @@ var spriteAbbr = {
 
 var globals = {
     context     : undefined,
+	toolctx     : undefined,
     sheet       : undefined,
     itemsheet   : undefined,
     maxSize     : 500,
@@ -70,8 +71,9 @@ function handlers(){
 
     $(document).mousemove(
         function(e){
-            globals.mouseX = e.pageX-9;
-            globals.mouseY = e.pageY-9;
+            globals.mouseX = e.pageX - 9;
+            globals.mouseY = e.pageY - 9;
+			console.log(utils.offset);
         }
     );
 
@@ -92,6 +94,17 @@ function handlers(){
 
 
 var utils = {
+	offset : [0, 0],
+	oldoffset : [0, 0],
+	offsetMouse:
+		function (dx, dy){
+			this.oldoffset = this.offset;
+			this.offset = [dx, dy];
+		},
+	resetMouse:
+		function (){
+			offset = this.oldoffset; 
+		},
     getSpriteDir:
         function (nm){
             return ""+nm+".png";
@@ -130,8 +143,8 @@ var utils = {
         },
     pointIntersectRect:
         function(x, y, rect){
-            return (x > rect.x1 && x < rect.x2 &&
-                    y > rect.y1 && y < rect.y2 )
+            return (x >= rect.x1 && x <= rect.x2 &&
+                    y >= rect.y1 && y <= rect.y2 )
 
         },
     getRectPoints:
