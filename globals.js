@@ -34,6 +34,7 @@ var globals = {
                         return false;
                     },
                 },
+
 };
 
 globals.mapWidth = (globals.tilesWide - 1) * globals.tileWidth;
@@ -55,6 +56,11 @@ var Game = {
     dialog      : undefined, 
 };
 
+    $(document).mousedown(
+        function(e){
+            globals.mousedown = true;
+        }
+    );
 
 
 function handlers(){ 

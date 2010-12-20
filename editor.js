@@ -24,10 +24,10 @@ function getUniqueID(){
 }
 
 function selectAddItem(itm){
-    $("#maplist").html(
-            $("#maplist").html() + 
-            '<option id="' + itm + '">' + itm + '</option>'
-            );
+   // $("#maplist").html(
+    //        $("#maplist").html() + 
+     //       '<option id="' + itm + '">' + itm + '</option>'
+      //      );
 }
 
 function switchToMap(which){
@@ -115,12 +115,14 @@ function click(){
 
 	//Recognize a click on the toolbox
 	//TODO: once i put this into it's own canvas, probably should remove scrollX/Y
+	console.log($("#toolbox").offset().left);
+	console.log(globals.mouseX);
     var pos = 0;
     for (var i in Sprites.getOrderedList()){
 		//console.log( $("#toolbox").offset());
 		//debugger; 
-        if (utils.pointIntersectRect( globals.mouseX - $("#toolbox").offset().left + 9,
-									  globals.mouseY - $("#toolbox").offset().top + 9 , 
+        if (utils.pointIntersectRect( globals.mouseX - $("#toolbox").offset().left + 9, //MouseX and Y are usually offset by 9. However, here we need to change that offset.
+									  globals.mouseY - $("#toolbox").offset().top + 9 , //This is kinda gnarly and if I ever decide to add more stuff I should definitely reword this code.
 									  utils.makeRect(toolboxPos[i][0], toolboxPos[i][1], globals.tileWidth))){
 			console.log("Hit.");
             selTile = JSON.parse(JSON.stringify(Sprites.getNth(i)));
@@ -239,9 +241,9 @@ function initialize(){
 	
 	//$("#main").height(canvasSize);
     //bind event to the select box
-    $("#maplist").change(function(e){
-        switchToMap($("#maplist option:selected").text());
-    });
+    //$("#maplist").change(function(e){
+    //    switchToMap($("#maplist option:selected").text());
+    //});
 
     $("#newroom").click(function(){
         createNewMap();
@@ -251,45 +253,22 @@ function initialize(){
     globals.toolctx = document.getElementById('toolbox').getContext('2d');
 
     $("#btn").click(function(){
-        /*
-        var out = "data : [\n";
-        for (var i=0;i<curObj.map.length;i++){
-            out += "[";
-            for (var j=0;j<curObj.map.length;j++){ 
-                out += "["+  curObj.map[i][j][0] + "," + curObj.map[i][j][1] + ",'" + curObj.map[i][j][2] + "'], " ; //Not IE compliant, but screw IE
-            }
-            out += "], \n"; //Still not IE compliant
-        }
-        out += "]\n";
-
-        out += "special : [\n";
-
-        for (var i=0;i<curObj.map.length;i++){
-            out += "[";
-            for (var j=0;j<curObj.map.length;j++){ 
-
-                if (curObj.special[i][j][0] == 1 && curObj.special[i][j][1] == 0) {
-
-                    out += "[0], " ; 
-                    continue;
-                }
-                out += "["+  curObj.special[i][j][0] + "," + curObj.special[i][j][1] + ",'" + curObj.special[i][j][2] + "'], " ; 
-            }
-            out += "], \n";
-        }
-        out += "]\n";
-        */
 
         out = "";
-	var themap = maps["0"].map;
-	var TILEMAP_SIZE = Sprites.sheets[0].tilesWide;
-	for (var row in themap){ 
-		for (var i=0;i<themap.length;i++) { 
-			for (var j=0;j<themap[i].length;j++)
-				out += themap[i][j][0] * TILEMAP_SIZE + themap[i][j][1] + ","; //FIXME
-			out += "\n";
+		var actualSize = parseInt($("#size").val());
+		var themap = maps["0"].map;
+		var TILEMAP_SIZE = Sprites.sheets[0].tilesWide;
+		out += "[";
+		for (var i=0;i<actualSize;i++) { 
+			out += "[";
+			for (var j=0;j<actualSize;j++) {
+				out += "[" + themap[i][j][0] + "," + themap[i][j][1] + "]"; 
+				if (j != actualSize - 1) out += ",";
+			}
+			out += "]";
+			if (i != actualSize - 1) out += ",\n";
+			else out += "]";
 		}
-	}
 
 
         $("#txt").val(out);
@@ -299,15 +278,12 @@ function initialize(){
     $("#lbtn").click(function(){
         var data = $("#txt").val();
         //Parse out unnecessary details
-        if (data.indexOf("{") != -1){
-            data = data.substr(data.indexOf("{"));
-        }
-        data = data.substr(data.indexOf("["));
-        if (data.lastIndexOf(",") > data.lastIndexOf("]")){
-            data = data.substring(0, data.lastIndexOf(",")); 
-        }
-        curObj.map = eval(data); //horror music plays
-
+        maps["0"].map = eval(data); //horror music plays
+		for (var i=0;i<maps["0"].map.length;i++)
+			for (var j=0;j<maps["0"].map[i].length;j++)
+				{
+					maps["0"].map[i][j].push("DN");
+				}
     }); 
 
     setInterval(gameLoop, 5);
